@@ -1,0 +1,140 @@
+/* --- Global Styles --- */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    background-color: #f0f2f5;
+    color: #1c1e21;
+    margin: 0;
+    /* Flexbox for centering */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 90%;
+    max-width: 550px;
+}
+
+/* --- Header --- */
+header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* --- Content & Sections --- */
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.settings-section {
+    background: #fff;
+    padding: 20px 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.settings-section h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1c1e21;
+    margin: 0 0 10px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.description {
+    font-size: 14px;
+    color: #606770;
+    margin: 0 0 15px 0;
+    line-height: 1.6;
+}
+
+/* --- Input & Button Groups --- */
+.input-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+    gap: 10px;
+}
+
+.icon-prefix {
+    position: absolute;
+    left: 14px;
+    color: #adb5bd;
+    font-size: 14px;
+}
+
+.input-group input[type="password"] {
+    flex-grow: 1;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px 14px 12px 40px; /* Left padding for icon */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+    background-color: #f8f9fa;
+}
+
+.input-group input[type="password"]:focus {
+    border-color: #007aff;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+}
+
+.input-group button,
+.action-btn {
+    border: none;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, opacity 0.2s;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.input-group button {
+    background-color: #007aff;
+}
+.input-group button:hover {
+    background-color: #005ce6;
+}
+
+.button-group {
+    display: flex;
+    gap: 15px;
+}
+
+.action-btn {
+    flex: 1;
+    background-color: #5856d6;
+}
+.action-btn:hover {
+    opacity: 0.85;
+}
+
+.action-btn.secondary {
+    background-color: #6c757d;
+}

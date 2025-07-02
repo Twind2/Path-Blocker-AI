@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Path Blocker (AI Edition)",
+  "version": "2.0",
+  "description": "一个结合了永久锁定和AI守护模式的硬核网站拦截器，保护您的专注力。",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [ "interception.html", "interception.css", "interception.js" ],
+      "matches": [ "<all_urls>" ]
+    }
+  ]
+}

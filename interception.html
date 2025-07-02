@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>页面已拦截</title>
+    <link rel="stylesheet" href="interception.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+</head>
+<body>
+    <div class="card">
+        <div class="header">
+            <i class="fas fa-shield-halved icon"></i>
+            <h1 id="reason-title">访问被拦截</h1>
+        </div>
+        <div class="content">
+            <p id="reason-message">此页面已被 Path Blocker 拦截。</p>
+            <div class="details" id="ai-details" style="display: none;">
+                <p><strong>当前意图:</strong> <span id="intent"></span></p>
+                <p><strong>页面标题:</strong> "<span id="title"></span>"</p>
+            </div>
+            <p class="original-url-container">
+                <strong>目标网址:</strong>
+                <span id="original-url" class="url-text"></span>
+            </p>
+        </div>
+        <div class="actions">
+            <div class="action-group" id="ai-action-group">
+                <select id="pass-duration-select" class="action-select">
+                    <option value="once">仅放行本次</option>
+                    <option value="hour">放行一小时</option>
+                    <option value="today">放行至今日结束</option>
+                    <option value="permanent">永远信任此网站</option>
+                </select>
+                <button id="grant-access-btn" class="action-btn primary">
+                    <i class="fas fa-check"></i> 确认放行
+                </button>
+            </div>
+            <button id="go-back-btn" class="action-btn tertiary">
+                <i class="fas fa-arrow-left"></i> 我知道了，返回
+            </button>
+        </div>
+    </div>
+    <script src="interception.js"></script>
+</body>
+</html>
