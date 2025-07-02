@@ -4,16 +4,16 @@ body {
     background-color: #f0f2f5;
     color: #1c1e21;
     margin: 0;
-    /* Flexbox for centering */
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    padding: 40px 20px;
     min-height: 100vh;
 }
 
 .container {
     width: 90%;
-    max-width: 550px;
+    max-width: 600px;
 }
 
 /* --- Header --- */
@@ -56,6 +56,9 @@ header h1 {
     align-items: center;
     gap: 10px;
 }
+.settings-section h2 .fab {
+    font-size: 20px;
+}
 
 .description {
     font-size: 14px;
@@ -72,51 +75,79 @@ header h1 {
     gap: 10px;
 }
 
+.input-group.vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+.input-group.vertical label {
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 2px;
+}
+.input-group.vertical input {
+    width: 100%;
+}
+
+
 .icon-prefix {
     position: absolute;
     left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
     color: #adb5bd;
     font-size: 14px;
 }
 
-.input-group input[type="password"] {
+.input-group input[type="password"],
+.input-group input[type="text"] {
     flex-grow: 1;
     box-sizing: border-box;
-    width: 100%;
-    padding: 12px 14px 12px 40px; /* Left padding for icon */
+    padding: 12px 14px;
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 14px;
     outline: none;
     transition: all 0.2s;
     background-color: #f8f9fa;
+    min-width: 0; /* **核心修复点之一**: 允许输入框在flex布局中收缩 */
+}
+.input-group:not(.vertical) input[type="password"] {
+    padding-left: 40px;
 }
 
-.input-group input[type="password"]:focus {
+
+.input-group input:focus {
     border-color: #007aff;
     background-color: #fff;
     box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
 }
 
 .input-group button,
-.action-btn {
-    border: none;
-    color: white;
+.action-btn,
+.action-select {
+    border: 1px solid #ddd;
+    color: #333;
     padding: 12px 20px;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s, opacity 0.2s;
-    flex-shrink: 0;
+    transition: background-color 0.2s, opacity 0.2s, border-color 0.2s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    background-color: #f8f9fa;
 }
 
 .input-group button {
     background-color: #007aff;
+    border-color: #007aff;
+    color: white;
+    flex-shrink: 0; /* **核心修复点之二**: 确保按钮本身不被压缩 */
 }
 .input-group button:hover {
     background-color: #005ce6;
@@ -130,11 +161,36 @@ header h1 {
 .action-btn {
     flex: 1;
     background-color: #5856d6;
+    border-color: #5856d6;
+    color: white;
 }
 .action-btn:hover {
     opacity: 0.85;
 }
-
 .action-btn.secondary {
     background-color: #6c757d;
+    border-color: #6c757d;
+}
+.action-btn:disabled {
+    background-color: #e9ecef;
+    border-color: #e9ecef;
+    color: #adb5bd;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+.action-select {
+    flex-grow: 1; /* **核心修复点之三**: 让下拉框占据主要剩余空间 */
+    width: auto; /* 覆盖默认的100%宽度，让flexbox来决定 */
+    min-width: 0; /* 允许下拉框在空间不足时收缩 */
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23495057" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 20px;
+}
+.action-select:disabled {
+     color: #adb5bd;
+     cursor: not-allowed;
 }

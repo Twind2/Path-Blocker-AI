@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>设置 - Path Blocker</title>
-    <link rel="stylesheet" href="setting.css"> 
+    <link rel="stylesheet" href="setting.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
 </head>
 <body>
@@ -14,22 +14,50 @@
 
         <div class="content-wrapper">
             <section class="settings-section">
-                <h2><i class="fas fa-key"></i> Gemini API 密钥管理</h2>
-                <p class="description">
-                    AI 守护模式需要您自己的 Gemini API 密钥。请前往 Google AI Studio 获取。
-                </p>
+                <h2><i class="fas fa-brain"></i> AI 提供商</h2>
+                <p class="description">选择您希望用于“AI守护模式”的AI模型。切换后请确保下方对应的API密钥已正确配置。</p>
+                <div class="input-group">
+                     <select id="aiProviderSelect" class="action-select">
+                        <option value="gemini">Google Gemini</option>
+                        <option value="openai">OpenAI GPT</option>
+                    </select>
+                </div>
+            </section>
+
+            <section id="gemini-settings" class="settings-section api-settings-section">
+                <h2><i class="fas fa-key"></i> Gemini API 密钥</h2>
+                <p class="description">当选择 Gemini 时，AI 守护模式需要您自己的 Gemini API 密钥。</p>
                 <div class="input-group">
                     <i class="fas fa-key icon-prefix"></i>
-                    <input type="password" id="apiKeyInput" placeholder="输入或更新您的 Gemini API 密钥">
-                    <button id="saveApiKeyBtn" title="保存API密钥">保存</button>
+                    <input type="password" id="geminiApiKeyInput" placeholder="输入您的 Gemini API 密钥">
+                    <button id="saveGeminiApiKeyBtn" title="保存Gemini API密钥">保存</button>
+                </div>
+            </section>
+            
+            <section id="openai-settings" class="settings-section api-settings-section" style="display: none;">
+                <h2><i class="fab fa-openai"></i> OpenAI API 配置</h2>
+                <p class="description">当选择 OpenAI 时，请提供API基础地址、密钥，然后获取并选择模型。</p>
+                <div class="input-group vertical">
+                    <label for="openaiApiUrlInput">API 基础地址 (Base URL):</label>
+                    <input type="text" id="openaiApiUrlInput" placeholder="例如: https://api.openai.com/v1">
+                    
+                    <label for="openaiApiKeyInput">API 密钥 (API Key):</label>
+                    <input type="password" id="openaiApiKeyInput" placeholder="输入您的 OpenAI API 密钥 (sk-...)">
+                </div>
+                <div class="input-group" style="margin-top: 15px;">
+                    <select id="openaiModelSelect" class="action-select" disabled>
+                        <option value="">请先获取模型列表</option>
+                    </select>
+                    <button id="fetchModelsBtn" title="从API获取可用模型">获取模型</button>
+                </div>
+                 <div class="button-group" style="margin-top: 15px;">
+                    <button id="saveOpenaiSettingsBtn" class="action-btn" disabled><i class="fas fa-save"></i> 保存OpenAI设置</button>
                 </div>
             </section>
 
             <section class="settings-section">
-                <h2><i class="fas fa-database"></i> 数据管理</h2>
-                <p class="description">
-                    您可以将永久锁定规则导出为 JSON 文件进行备份，或从备份文件中恢复。
-                </p>
+                <h2><i class="fas fa-database"></i> 数据管理（暂未上线）</h2>
+                <p class="description">您可以将永久锁定规则导出为 JSON 文件进行备份，或从备份文件中恢复。</p>
                 <div class="button-group">
                     <button class="action-btn" id="exportBtn"><i class="fas fa-file-export"></i> 导出规则</button>
                     <button class="action-btn secondary" id="importBtn"><i class="fas fa-file-import"></i> 导入规则</button>
@@ -38,10 +66,8 @@
             </section>
             
             <section class="settings-section">
-                <h2><i class="fas fa-sliders-h"></i> AI 守护模式选项</h2>
-                 <p class="description">
-                    管理已永久信任的网站列表，或清除所有网站的临时通行证。
-                </p>
+                <h2><i class="fas fa-sliders-h"></i> AI 守护模式选项（暂未上线）</h2>
+                 <p class="description">管理已永久信任的网站列表，或清除所有网站的临时通行证。</p>
                  <div class="button-group">
                     <button class="action-btn" id="clearWhitelistBtn"><i class="fas fa-trash-alt"></i> 清空永久白名单</button>
                     <button class="action-btn secondary" id="clearPassesBtn"><i class="fas fa-eraser"></i> 清除所有临时通行证</button>

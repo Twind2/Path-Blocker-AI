@@ -5,21 +5,6 @@
     <title>Path Blocker (AI Edition)</title>
     <link rel="stylesheet" href="popup.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-    <style>
-        /* Style for the new settings link */
-        #settingsLink {
-            position: absolute;
-            top: 22px;
-            right: 22px;
-            color: #606770;
-            font-size: 18px;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        #settingsLink:hover {
-            color: #007aff;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -29,6 +14,13 @@
         </header>
 
         <div class="content-wrapper">
+            <section class="focus-score-section">
+                <div class="score-display">
+                    <span id="focusScore" class="score-value">--</span>
+                    <span class="score-label">专注度</span>
+                </div>
+            </section>
+
             <section class="mode-section">
                 <div class="mode-switcher">
                     <button class="mode-btn" id="modeHardcore" data-mode="hardcore" title="仅启用永久锁定列表"><i class="fas fa-lock"></i> 硬核</button>
@@ -43,8 +35,7 @@
                     </div>
                     <button id="setIntentBtn" title="设定AI意图">设定</button>
                 </div>
-
-                </section>
+            </section>
 
             <section class="add-section">
                 <button id="addCurrentPageBtn" class="quick-add-btn">
