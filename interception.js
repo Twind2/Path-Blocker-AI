@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const goBackBtn = document.getElementById('go-back-btn');
 
     if (reason === 'hardcore') {
-        reasonTitle.textContent = '硬核规则拦截';
+        reasonTitle.textContent = '规则拦截';
         reasonMessage.textContent = '此页面匹配了您的永久锁定列表中的一条规则。';
         if (aiActionGroup) aiActionGroup.style.display = 'none';
     } else if (reason && reason.startsWith('ai')) {
