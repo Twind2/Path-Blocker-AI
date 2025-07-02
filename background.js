@@ -4,93 +4,152 @@ import { getSettings, addToPermanentWhitelist, addToTemporaryPass, addToTodayPas
 import { isContentAllowedByAI } from './modules/ai.js';
 import { isHardcoreBlocked } from './modules/utils.js';
 
-const MAX_SCORE_HISTORY = 100; // 存储最近100条评分用于计算平均值
+// --- 全局变量 ---
+const checkDebouncers = {}; // 存储每个tab的计时器
+const DEBOUNCE_DELAY = 750; // 750毫秒的延迟，确保标题已稳定
+const MAX_SCORE_HISTORY = 100; // 存储最近100条评分
 
-// --- 核心监听器：当标签页更新时触发 ---
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-    if (!changeInfo.status) return;
+// --- 核心逻辑 ---
 
-    const { url, title } = tab;
-    if (!url || !url.startsWith('http')) return;
-
-    const oneTimePassKey = `oneTimePass_tab_${tabId}`;
-    const sessionData = await chrome.storage.session.get(oneTimePassKey);
-    const passUrl = sessionData[oneTimePassKey];
-
-    if (passUrl) {
-        if (url === passUrl) {
-            if (changeInfo.status === 'complete') await chrome.storage.session.remove(oneTimePassKey);
-            return; 
-        } else {
-            await chrome.storage.session.remove(oneTimePassKey);
-        }
-    }
-
-    if (changeInfo.status === 'complete') {
-        const settings = await getSettings();
-        const mode = settings.current_mode || 'hybrid';
-
-        if (mode === 'hardcore') {
-            if (isHardcoreBlocked(url, settings.groups)) {
-                redirectToInterception(tabId, url, 'hardcore');
-            }
+/**
+ * 这是一个将被“防抖”处理的函数。
+ * 它会在延迟后执行，以获取最新的页面信息并进行检查。
+ * @param {number} tabId
+ */
+const debouncedCheck = async (tabId) => {
+    try {
+        const tab = await chrome.tabs.get(tabId);
+        // 如果标签页已关闭，或URL/标题无效，则中止
+        if (!tab || !tab.url || !tab.url.startsWith('http') || !tab.title) {
             return;
         }
+        console.log(`[Path Blocker] 开始分析: "${tab.title}"`);
+        await performChecks(tab.id, tab.url, tab.title);
+    } catch (error) {
+        // 这通常在标签页被关闭时发生
+        console.log(`[Path Blocker] 无法获取标签页 ${tabId} 的信息，可能已被关闭。`);
+    }
+};
 
-        if (mode === 'ai' || mode === 'hybrid') {
-            // --- 核心修复逻辑 ---
-            // 检查白名单或临时通行证
-            if (settings.ai_permanent_whitelist?.includes(url) || (settings.ai_temporary_pass?.[url] && Date.now() < settings.ai_temporary_pass[url])) {
-                console.log(`[通行证] 检查通过，为 ${url} 记录满分100`);
-                
-                // 为受信任的网站手动记录100分
-                const data = await chrome.storage.local.get('focus_scores_history');
-                let scores = data.focus_scores_history || [];
-                scores.push(100); // 添加满分
-                if (scores.length > MAX_SCORE_HISTORY) scores.shift(); // 维持数组长度
-                await chrome.storage.local.set({ 'focus_scores_history': scores });
+/**
+ * 触发检查的入口函数。
+ * 任何需要进行AI分析的事件都应该调用这个函数。
+ * @param {number} tabId
+ */
+const triggerCheck = (tabId) => {
+    // 如果该标签页已有计时器在运行，则清除它
+    if (checkDebouncers[tabId]) {
+        clearTimeout(checkDebouncers[tabId]);
+    }
+    // 设置一个新的计时器
+    checkDebouncers[tabId] = setTimeout(() => debouncedCheck(tabId), DEBOUNCE_DELAY);
+};
 
-                // 记录分数后，即可安全返回，不再执行后续AI调用
-                return;
-            }
 
-            // [混合模式] 检查硬核规则
-            if (mode === 'hybrid' && isHardcoreBlocked(url, settings.groups)) {
-                redirectToInterception(tabId, url, 'hardcore');
-                return;
-            }
+// --- 事件监听器 ---
 
-            // AI调用与评分逻辑
-            const aiResult = await isContentAllowedByAI(title, settings);
-            
-            if (aiResult.score !== -1) {
-                const data = await chrome.storage.local.get('focus_scores_history');
-                let scores = data.focus_scores_history || [];
-                scores.push(aiResult.score);
-                if (scores.length > MAX_SCORE_HISTORY) scores.shift();
-                await chrome.storage.local.set({ 'focus_scores_history': scores });
-                console.log(`全局专注度评分历史已更新。当前记录数: ${scores.length}`);
-            }
-
-            // 根据决策进行拦截
-            if (!aiResult.isAllowed) {
-                console.log(`[AI模式] AI判断为拦截: ${title}`);
-                const reason = `ai&intent=${encodeURIComponent(settings.ai_intent)}&title=${encodeURIComponent(title || '未知标题')}`;
-                redirectToInterception(tabId, url, reason);
-            } else {
-                console.log(`[AI模式] AI判断为放行: ${title}`);
-            }
+// 监听器 1: 用于传统页面加载和标题变化（作为备用）
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    // 仅在页面加载完成或标题发生变化时触发
+    if (changeInfo.status === 'complete' || changeInfo.title) {
+        // 避免在拦截页面上触发循环
+        if (tab.url && !tab.url.includes('interception.html')) {
+            triggerCheck(tabId);
         }
     }
 });
 
-// --- 消息监听器 (无需修改) ---
+// 监听器 2: 用于单页应用（SPA）的导航，这是更可靠的方式
+chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
+    // 我们只关心顶级框架的导航事件
+    if (details.frameId === 0) {
+        if (details.url && !details.url.includes('interception.html')) {
+            triggerCheck(details.tabId);
+        }
+    }
+});
+
+// 监听器 3: 清理工作，当标签页关闭时，清除对应的计时器
+chrome.tabs.onRemoved.addListener((tabId) => {
+    if (checkDebouncers[tabId]) {
+        clearTimeout(checkDebouncers[tabId]);
+        delete checkDebouncers[tabId];
+    }
+});
+
+
+/**
+ * 执行所有拦截检查的核心函数
+ * @param {number} tabId
+ * @param {string} url
+ * @param {string} title
+ */
+async function performChecks(tabId, url, title) {
+    const oneTimePassKey = `oneTimePass_tab_${tabId}`;
+    const sessionData = await chrome.storage.session.get(oneTimePassKey);
+    const passUrl = sessionData[oneTimePassKey];
+
+    if (passUrl && url === passUrl) {
+        await chrome.storage.session.remove(oneTimePassKey);
+        return; 
+    }
+
+    const settings = await getSettings();
+    const mode = settings.current_mode || 'hybrid';
+
+    if (mode === 'hardcore') {
+        if (isHardcoreBlocked(url, settings.groups)) {
+            redirectToInterception(tabId, url, 'hardcore');
+        }
+        return;
+    }
+
+    if (mode === 'ai' || mode === 'hybrid') {
+        const domain = new URL(url).hostname;
+        if (settings.ai_permanent_whitelist?.includes(domain) || (settings.ai_temporary_pass?.[url] && Date.now() < settings.ai_temporary_pass[url])) {
+            console.log(`[Path Blocker] 通行证/白名单放行: ${url}`);
+            await updateFocusScore(100);
+            return;
+        }
+
+        if (mode === 'hybrid' && isHardcoreBlocked(url, settings.groups)) {
+            redirectToInterception(tabId, url, 'hardcore');
+            return;
+        }
+
+        const aiResult = await isContentAllowedByAI(title, settings);
+        
+        if (aiResult.score !== -1) {
+            await updateFocusScore(aiResult.score);
+        }
+
+        if (!aiResult.isAllowed) {
+            console.log(`[Path Blocker] AI 拦截: ${title}`);
+            const reason = `ai&intent=${encodeURIComponent(settings.ai_intent || '')}&title=${encodeURIComponent(title || '未知标题')}`;
+            redirectToInterception(tabId, url, reason);
+        } else {
+            console.log(`[Path Blocker] AI 放行: ${title}`);
+        }
+    }
+}
+
+/**
+ * 更新全局专注度分数
+ * @param {number} score 
+ */
+async function updateFocusScore(score) {
+    const data = await chrome.storage.local.get('focus_scores_history');
+    let scores = data.focus_scores_history || [];
+    scores.push(score);
+    if (scores.length > MAX_SCORE_HISTORY) scores.shift();
+    await chrome.storage.local.set({ 'focus_scores_history': scores });
+}
+
+// 消息监听器: 处理来自拦截页面或弹出窗口的通信
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
-    if (request.action === 'go_back') {
+    if (request.action === 'go_back' && request.tabId) {
         chrome.tabs.goBack(request.tabId, () => {
-            if (chrome.runtime.lastError) {
-                chrome.tabs.remove(request.tabId);
-            }
+            if (chrome.runtime.lastError) chrome.tabs.remove(request.tabId);
         });
         return;
     }
@@ -99,19 +158,25 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         const { url, tabId, duration } = request;
         if (!url) return;
         const targetTabId = tabId || sender.tab.id;
+        
         switch (duration) {
             case 'once':
                 await chrome.storage.session.set({ [`oneTimePass_tab_${targetTabId}`]: url });
                 break;
             case 'hour': await addToTemporaryPass(url); break;
             case 'today': await addToTodayPass(url); break;
-            case 'permanent': await addToPermanentWhitelist(url); break;
+            case 'permanent': await addToPermanentWhitelist(new URL(url).hostname); break;
         }
         chrome.tabs.update(targetTabId, { url: url });
     }
 });
 
-// --- 辅助函数 (无需修改) ---
+/**
+ * 重定向到拦截页面的辅助函数
+ * @param {number} tabId
+ * @param {string} originalUrl
+ * @param {string} reason
+ */
 function redirectToInterception(tabId, originalUrl, reason) {
     const interceptionUrl = chrome.runtime.getURL('interception.html');
     const targetUrl = `${interceptionUrl}?url=${encodeURIComponent(originalUrl)}&reason=${reason}&tabId=${tabId}`;
