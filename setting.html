@@ -30,8 +30,9 @@
                 <div class="input-group">
                     <i class="fas fa-key icon-prefix"></i>
                     <input type="password" id="geminiApiKeyInput" placeholder="输入您的 Gemini API 密钥">
-                    <button id="saveGeminiApiKeyBtn" title="保存Gemini API密钥">保存</button>
+                    <button id="saveGeminiApiKeyBtn" title="保存并验证Gemini API密钥">保存并验证</button>
                 </div>
+                <p class="api-status-indicator" id="gemini-status"></p>
             </section>
             
             <section id="openai-settings" class="settings-section api-settings-section" style="display: none;">
@@ -51,12 +52,13 @@
                     <button id="fetchModelsBtn" title="从API获取可用模型">获取模型</button>
                 </div>
                  <div class="button-group" style="margin-top: 15px;">
-                    <button id="saveOpenaiSettingsBtn" class="action-btn" disabled><i class="fas fa-save"></i> 保存OpenAI设置</button>
+                    <button id="saveOpenaiSettingsBtn" class="action-btn" disabled><i class="fas fa-save"></i> 保存并验证</button>
                 </div>
+                <p class="api-status-indicator" id="openai-status"></p>
             </section>
 
             <section class="settings-section">
-                <h2><i class="fas fa-database"></i> 数据管理（暂未上线）</h2>
+                <h2><i class="fas fa-database"></i> 数据管理</h2>
                 <p class="description">您可以将永久锁定规则导出为 JSON 文件进行备份，或从备份文件中恢复。</p>
                 <div class="button-group">
                     <button class="action-btn" id="exportBtn"><i class="fas fa-file-export"></i> 导出规则</button>
@@ -66,7 +68,7 @@
             </section>
             
             <section class="settings-section">
-                <h2><i class="fas fa-sliders-h"></i> AI 守护模式选项（暂未上线）</h2>
+                <h2><i class="fas fa-sliders-h"></i> AI 守护模式选项</h2>
                  <p class="description">管理已永久信任的网站列表，或清除所有网站的临时通行证。</p>
                  <div class="button-group">
                     <button class="action-btn" id="clearWhitelistBtn"><i class="fas fa-trash-alt"></i> 清空永久白名单</button>

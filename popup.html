@@ -33,7 +33,11 @@
                         <i class="fas fa-bullseye"></i>
                         <input type="text" id="aiIntentInput" placeholder="设定当前意图 (如: 学习)">
                     </div>
-                    <button id="setIntentBtn" title="设定AI意图">设定</button>
+                <button id="setIntentBtn" title="设定AI意图">设定</button>
+                </div>
+                <div class="api-status-popup" id="apiStatusContainer" style="display: none;">
+                    <span id="apiStatusText"></span>
+                    <button id="refreshApiBtn" title="刷新API状态"><i class="fas fa-sync-alt"></i></button>
                 </div>
             </section>
 
@@ -62,5 +66,20 @@
         </div>
     </div>
     <script src="popup.js"></script>
+
+
+    <div id="customDialogOverlay" class="dialog-overlay hidden">
+        <div id="customDialogBox" class="dialog-box">
+            <h3 id="dialogTitle">对话框标题</h3>
+            <p id="dialogMessage">这是一条消息。</p>
+            <input type="text" id="dialogInput" class="dialog-input" style="display: none;">
+            <select id="dialogGroupSelect" class="dialog-input" style="display: none;"></select>
+            <div class="dialog-actions">
+                <button id="dialogCancelBtn" class="dialog-btn secondary">取消</button>
+                <button id="dialogConfirmBtn" class="dialog-btn primary">确认</button>
+            </div>
+        </div>
+    </div>
+    </body>
 </body>
 </html>

@@ -365,3 +365,130 @@ header .fa-shield-halved {
     background-color: #fff;
     border-radius: 12px;
 }
+
+/* --- 新增：API 状态显示 --- */
+.api-status-popup {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+.api-status-popup.success { background-color: #e6f4ea; color: #3d8b5b; }
+.api-status-popup.error { background-color: #fdeeee; color: #c93c3c; }
+.api-status-popup.checking { background-color: #e9ecef; color: #495057; }
+
+#apiStatusText {
+    font-weight: 500;
+}
+
+#refreshApiBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    font-size: 13px;
+    padding: 2px;
+    line-height: 1;
+}
+#refreshApiBtn i.fa-sync-alt {
+    transition: transform 0.8s ease-in-out;
+}
+#refreshApiBtn.loading i.fa-sync-alt {
+    transform: rotate(360deg);
+}
+
+/* --- 新增：自定义对话框样式 --- */
+.hidden {
+    display: none !important;
+}
+
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.dialog-box {
+    background: #fff;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 320px;
+    text-align: center;
+}
+
+.dialog-box h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.dialog-box p {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #606770;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.dialog-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+}
+.dialog-input:focus {
+    outline: none;
+    border-color: #007aff;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.dialog-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dialog-btn.primary {
+    background-color: #007aff;
+    color: white;
+}
+.dialog-btn.primary:hover {
+    background-color: #005ce6;
+}
+
+.dialog-btn.secondary {
+    background-color: #e9ecef;
+    color: #495057;
+}
+.dialog-btn.secondary:hover {
+    background-color: #dee2e6;
+}

@@ -18,7 +18,9 @@
     "permissions": [
     "storage",
     "tabs",
-    "webNavigation"
+    "webNavigation",
+    "history",
+    "offscreen"
   ],
   "host_permissions": [
     "<all_urls>"

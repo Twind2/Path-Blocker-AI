@@ -5,180 +5,186 @@ import { isContentAllowedByAI } from './modules/ai.js';
 import { isHardcoreBlocked } from './modules/utils.js';
 
 // --- 全局变量 ---
-const checkDebouncers = {}; // 存储每个tab的计时器
-const DEBOUNCE_DELAY = 750; // 750毫秒的延迟，确保标题已稳定
-const MAX_SCORE_HISTORY = 100; // 存储最近100条评分
+const checkDebouncers = {};
+const DEBOUNCE_DELAY = 750;
+const MAX_SCORE_HISTORY = 100;
+const lastAITriggerTime = {}; // 防止AI重复调用的时间锁
 
-// --- 核心逻辑 ---
+// --- 核心拦截逻辑 ---
 
-/**
- * 这是一个将被“防抖”处理的函数。
- * 它会在延迟后执行，以获取最新的页面信息并进行检查。
- * @param {number} tabId
- */
-const debouncedCheck = async (tabId) => {
+// [规则模式] 监听器: 即时URL拦截
+chrome.webNavigation.onCommitted.addListener(async (details) => {
+    if (details.frameId !== 0 || !details.url.startsWith('http') || details.url.includes('interception.html')) {
+        return;
+    }
+    const settings = await getSettings();
+    const mode = settings.current_mode || 'hybrid';
+    if ((mode === 'hardcore' || mode === 'hybrid') && isHardcoreBlocked(details.url, settings.groups)) {
+        console.log(`[Path Blocker] 规则拦截 (即时): ${details.url}`);
+        redirectToInterception(details.tabId, details.url, 'hardcore');
+    }
+});
+
+const debouncedAICheck = async (tabId) => {
     try {
         const tab = await chrome.tabs.get(tabId);
-        // 如果标签页已关闭，或URL/标题无效，则中止
         if (!tab || !tab.url || !tab.url.startsWith('http') || !tab.title) {
             return;
         }
-        console.log(`[Path Blocker] 开始分析: "${tab.title}"`);
-        await performChecks(tab.id, tab.url, tab.title);
+        console.log(`[Path Blocker] AI开始分析: "${tab.title}"`);
+        await performAIChecks(tab.id, tab.url, tab.title);
     } catch (error) {
-        // 这通常在标签页被关闭时发生
-        console.log(`[Path Blocker] 无法获取标签页 ${tabId} 的信息，可能已被关闭。`);
+        console.log(`[Path Blocker] AI无法获取标签页 ${tabId} 的信息。`);
     }
 };
 
-/**
- * 触发检查的入口函数。
- * 任何需要进行AI分析的事件都应该调用这个函数。
- * @param {number} tabId
- */
-const triggerCheck = (tabId) => {
-    // 如果该标签页已有计时器在运行，则清除它
+const triggerAICheck = (tabId) => {
+    const now = Date.now();
+    if (lastAITriggerTime[tabId] && (now - lastAITriggerTime[tabId] < 1000)) {
+        return;
+    }
+    lastAITriggerTime[tabId] = now;
     if (checkDebouncers[tabId]) {
         clearTimeout(checkDebouncers[tabId]);
     }
-    // 设置一个新的计时器
-    checkDebouncers[tabId] = setTimeout(() => debouncedCheck(tabId), DEBOUNCE_DELAY);
+    checkDebouncers[tabId] = setTimeout(() => debouncedAICheck(tabId), DEBOUNCE_DELAY);
 };
 
-
-// --- 事件监听器 ---
-
-// 监听器 1: 用于传统页面加载和标题变化（作为备用）
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    // 仅在页面加载完成或标题发生变化时触发
-    if (changeInfo.status === 'complete' || changeInfo.title) {
-        // 避免在拦截页面上触发循环
-        if (tab.url && !tab.url.includes('interception.html')) {
-            triggerCheck(tabId);
+const setupAIListeners = () => {
+    const handleAICheckTrigger = async (tabId) => {
+        const settings = await getSettings();
+        const mode = settings.current_mode || 'hybrid';
+        if (mode === 'ai' || mode === 'hybrid') {
+            triggerAICheck(tabId);
         }
-    }
-});
-
-// 监听器 2: 用于单页应用（SPA）的导航，这是更可靠的方式
-chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
-    // 我们只关心顶级框架的导航事件
-    if (details.frameId === 0) {
-        if (details.url && !details.url.includes('interception.html')) {
-            triggerCheck(details.tabId);
+    };
+    chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+        if (tab.url && !tab.url.includes('interception.html') && (changeInfo.status === 'complete' || changeInfo.title)) {
+            handleAICheckTrigger(tabId);
         }
-    }
-});
+    });
+    chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
+        if (details.frameId === 0 && details.url && !details.url.includes('interception.html')) {
+            handleAICheckTrigger(details.tabId);
+        }
+    });
+};
+setupAIListeners();
 
-// 监听器 3: 清理工作，当标签页关闭时，清除对应的计时器
 chrome.tabs.onRemoved.addListener((tabId) => {
-    if (checkDebouncers[tabId]) {
-        clearTimeout(checkDebouncers[tabId]);
-        delete checkDebouncers[tabId];
-    }
+    if (checkDebouncers[tabId]) delete checkDebouncers[tabId];
+    if (lastAITriggerTime[tabId]) delete lastAITriggerTime[tabId];
 });
 
-
-/**
- * 执行所有拦截检查的核心函数
- * @param {number} tabId
- * @param {string} url
- * @param {string} title
- */
-async function performChecks(tabId, url, title) {
+async function performAIChecks(tabId, url, title) {
     const oneTimePassKey = `oneTimePass_tab_${tabId}`;
     const sessionData = await chrome.storage.session.get(oneTimePassKey);
     const passUrl = sessionData[oneTimePassKey];
-
     if (passUrl && url === passUrl) {
         await chrome.storage.session.remove(oneTimePassKey);
-        return; 
-    }
-
-    const settings = await getSettings();
-    const mode = settings.current_mode || 'hybrid';
-
-    if (mode === 'hardcore') {
-        if (isHardcoreBlocked(url, settings.groups)) {
-            redirectToInterception(tabId, url, 'hardcore');
-        }
         return;
     }
-
-    if (mode === 'ai' || mode === 'hybrid') {
-        const domain = new URL(url).hostname;
-        if (settings.ai_permanent_whitelist?.includes(domain) || (settings.ai_temporary_pass?.[url] && Date.now() < settings.ai_temporary_pass[url])) {
-            console.log(`[Path Blocker] 通行证/白名单放行: ${url}`);
-            await updateFocusScore(100);
-            return;
-        }
-
-        if (mode === 'hybrid' && isHardcoreBlocked(url, settings.groups)) {
-            redirectToInterception(tabId, url, 'hardcore');
-            return;
-        }
-
-        const aiResult = await isContentAllowedByAI(title, settings);
-        
-        if (aiResult.score !== -1) {
-            await updateFocusScore(aiResult.score);
-        }
-
-        if (!aiResult.isAllowed) {
-            console.log(`[Path Blocker] AI 拦截: ${title}`);
-            const reason = `ai&intent=${encodeURIComponent(settings.ai_intent || '')}&title=${encodeURIComponent(title || '未知标题')}`;
-            redirectToInterception(tabId, url, reason);
-        } else {
-            console.log(`[Path Blocker] AI 放行: ${title}`);
-        }
+    const settings = await getSettings();
+    const domain = new URL(url).hostname;
+    if (settings.ai_permanent_whitelist?.includes(domain) || (settings.ai_temporary_pass?.[url] && Date.now() < settings.ai_temporary_pass[url])) {
+        await updateFocusScore(100);
+        return;
+    }
+    const aiResult = await isContentAllowedByAI(title, settings);
+    if (aiResult.score !== -1) await updateFocusScore(aiResult.score);
+    if (!aiResult.isAllowed) {
+        const reason = `ai&intent=${encodeURIComponent(settings.ai_intent || '')}&title=${encodeURIComponent(title || '未知标题')}`;
+        redirectToInterception(tabId, url, reason);
     }
 }
 
-/**
- * 更新全局专注度分数
- * @param {number} score 
- */
 async function updateFocusScore(score) {
-    const data = await chrome.storage.local.get('focus_scores_history');
-    let scores = data.focus_scores_history || [];
+    const { focus_scores_history: scores = [] } = await chrome.storage.local.get('focus_scores_history');
     scores.push(score);
     if (scores.length > MAX_SCORE_HISTORY) scores.shift();
-    await chrome.storage.local.set({ 'focus_scores_history': scores });
+    await chrome.storage.local.set({ focus_scores_history: scores });
 }
 
-// 消息监听器: 处理来自拦截页面或弹出窗口的通信
-chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
-    if (request.action === 'go_back' && request.tabId) {
-        chrome.tabs.goBack(request.tabId, () => {
-            if (chrome.runtime.lastError) chrome.tabs.remove(request.tabId);
-        });
-        return;
-    }
-
-    if (request.action === 'grant_pass') {
-        const { url, tabId, duration } = request;
-        if (!url) return;
-        const targetTabId = tabId || sender.tab.id;
-        
-        switch (duration) {
-            case 'once':
-                await chrome.storage.session.set({ [`oneTimePass_tab_${targetTabId}`]: url });
-                break;
-            case 'hour': await addToTemporaryPass(url); break;
-            case 'today': await addToTodayPass(url); break;
-            case 'permanent': await addToPermanentWhitelist(new URL(url).hostname); break;
-        }
-        chrome.tabs.update(targetTabId, { url: url });
-    }
-});
-
-/**
- * 重定向到拦截页面的辅助函数
- * @param {number} tabId
- * @param {string} originalUrl
- * @param {string} reason
- */
 function redirectToInterception(tabId, originalUrl, reason) {
     const interceptionUrl = chrome.runtime.getURL('interception.html');
     const targetUrl = `${interceptionUrl}?url=${encodeURIComponent(originalUrl)}&reason=${reason}&tabId=${tabId}`;
+    // 使用您的方案，不修改历史记录
     chrome.tabs.update(tabId, { url: targetUrl });
 }
+
+async function testApiKey(provider, settings) {
+    if (provider === 'gemini') {
+        const { api_key: apiKey } = settings;
+        if (!apiKey) return { success: false, error: 'API密钥未设置' };
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: "hi" }] }] })
+            });
+            if (response.ok) return { success: true };
+            const errorData = await response.json();
+            return { success: false, error: `API请求失败: ${errorData.error.message}` };
+        } catch (e) {
+            return { success: false, error: `网络错误: ${e.message}` };
+        }
+    } else if (provider === 'openai') {
+        const { openai_api_url: baseUrl, openai_api_key: apiKey } = settings;
+        if (!baseUrl || !apiKey) return { success: false, error: 'OpenAI配置不完整' };
+        const apiUrl = `${baseUrl.replace(/\/$/, '')}/models`;
+        try {
+            const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${apiKey}` } });
+            if (response.ok) return { success: true };
+            const errorData = await response.json();
+            return { success: false, error: `API请求失败: ${errorData.error.message}` };
+        } catch (e) {
+            return { success: false, error: `网络错误: ${e.message}` };
+        }
+    }
+    return { success: false, error: '未知的AI提供商' };
+}
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'go_back' && request.tabId) {
+        chrome.tabs.goBack(request.tabId, () => {
+            chrome.tabs.goBack(request.tabId, () => {
+                if (chrome.runtime.lastError) chrome.tabs.remove(request.tabId);
+            });
+        });
+        return true;
+    }
+    if (request.action === 'grant_pass') {
+        const { url, tabId, duration } = request;
+        if (!url) return true;
+        (async () => {
+            const targetTabId = tabId || sender.tab.id;
+            switch (duration) {
+                case 'once': await chrome.storage.session.set({ [`oneTimePass_tab_${targetTabId}`]: url }); break;
+                case 'hour': await addToTemporaryPass(url); break;
+                case 'today': await addToTodayPass(url); break;
+                case 'permanent': await addToPermanentWhitelist(new URL(url).hostname); break;
+            }
+            chrome.tabs.update(targetTabId, { url: url });
+        })();
+        return true;
+    }
+    if (request.action === 'validate_api') {
+        testApiKey(request.provider, request.settings).then(result => {
+            chrome.storage.local.set({ [`api_status_${request.provider}`]: result });
+            sendResponse(result);
+        });
+        return true;
+    }
+    if (request.action === 'refresh_api_status') {
+        getSettings().then(settings => {
+            const provider = settings.ai_provider || 'gemini';
+            testApiKey(provider, settings).then(result => {
+                chrome.storage.local.set({ [`api_status_${provider}`]: result });
+                sendResponse(result);
+            });
+        });
+        return true;
+    }
+    return false;
+});
