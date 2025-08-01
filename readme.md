@@ -1,71 +1,70 @@
-# Path Blocker (AI Edition) - README
+# Path Blocker (AI版) - 您的终极数字专注力守护者
+
+[![Stunning UI](https://img.shields.io/badge/UI-%E7%B2%BE%E7%BE%8E%E7%95%8C%E9%9D%A2-blueviolet)](setting.html)
+[![Intelligent AI](https://img.shields.io/badge/AI-%E6%99%BA%E8%83%BD%E5%AE%88%E6%8A%A4-orange)](modules/ai.js)
+[![Hardcore Mode](https://img.shields.io/badge/%E6%A8%A1%E5%BC%8F-%E7%A1%AC%E6%A0%B8%E9%94%81%E5%AE%9A-red)](background.js)
+
+**Path Blocker (AI版)** 是一款为追求极致专注而生的浏览器扩展程序。它不再是一个简单的网站拦截器，而是您个性化的、由AI驱动的数字纪律助理，旨在保护您最宝贵的资源——注意力。
 
 [English](#en) | [简体中文](#zh-cn)
 
 ---
 
-## <a name="en"></a>Path Blocker (AI Edition)
+## <a name="zh-cn"></a>核心功能
 
-**Path Blocker (AI Edition)** is a hardcore website blocker designed for ultimate focus. It combines a permanent, unremovable blocklist with a smart AI guardian to protect you from distractions.
+* **永久锁定模式 (Hardcore Mode)**: 您可以将那些“时间黑洞”网站（如社交媒体、新闻聚合站）添加到永久锁定列表。一旦添加，**规则无法删除或修改**，为您提供最强大的防干扰屏障。
 
-### Core Features
+* **AI守护模式 (AI Guardian Mode)**: 这才是本扩展的灵魂所在。
+    * **设定意图**: 您可以设定当前的工作或学习目标，例如“学习React”或“撰写季度报告”。
+    * **智能分析**: AI守护者会实时分析您访问的每一个页面的**标题**，并根据其内容与您设定意图的相关度进行评分。
+    * **精准拦截**: 如果AI认为页面内容与您的意图无关（例如，在学习编程时打开了娱乐新闻），它将自动拦截该页面，并向您解释原因。
 
-* **Permanent Blocking**: Once a site is added to the "Hardcore" list, it's locked forever. There's no turning back. This is for sites that you know are a complete waste of your time.
-* **AI Guardian Mode**: Set your current intention (e.g., "learning Python," "writing a report"), and the AI will analyze the pages you visit. If a page's content doesn't align with your stated goal, it will be blocked. This is perfect for preventing mindless Browse and staying on task.
-* **Hybrid Mode**: The perfect blend of both worlds. It gives top priority to your permanent blocklist while also using the AI Guardian to keep you focused on your current task.
-* **Flexible Whitelisting**: The AI isn't perfect. If it blocks a site you need, you can grant temporary (one-hour) or permanent access with a single click.
-* **Easy to Use**: A clean and intuitive interface makes it simple to manage your blocklists, set your AI's intention, and switch between modes.
+* **混合模式 (Hybrid Mode)**: 两全其美的最佳选择。它会优先执行您的永久锁定规则，在此基础上，再由AI守护您的浏览行为，确保最大化的专注力。
 
-### How It Works
+* **灵活的白名单与通行证**: AI并非完美。如果它误拦了您需要的网站，您只需轻轻一点，即可授予**临时通行证**（如仅本次、一小时或当天有效）或将其域名**永久加入白名单**。
 
-1.  **Choose Your Mode**:
-    * **Hardcore**: Only the permanent blocklist is active. Use this for maximum security against your worst digital habits.
-    * **AI Mode**: Only the AI Guardian is active. Set your intent and let the AI protect your focus.
-    * **Hybrid Mode**: Both the permanent list and the AI Guardian are active. This is the recommended default mode.
-2.  **Set Your Intention**: In AI or Hybrid mode, tell the AI what you're working on. This context is crucial for it to make smart blocking decisions. You'll need to provide your own Gemini API key for this feature.
-3.  **Build Your Permanent Blocklist**:
-    * **One-Click Add**: Instantly add the current website to your permanent blocklist.
-    * **Manual Add**: Manually enter a website's name and URL path to add it to the list. You can also organize your blocked sites into groups.
-4.  **Stay Focused**: When you try to visit a blocked site, Path Blocker will intercept the request and show you a page explaining why it was blocked.
-
-### Files in This Repository
-
-* `manifest.json`: The extension's configuration file, defining its permissions and core components.
-* `background.js`: The service worker that runs in the background, containing all the core logic for blocking sites and communicating with the AI.
-* `popup.html` / `popup.css` / `popup.js`: The user interface for the extension's popup, where you manage settings and blocklists.
-* `interception.html` / `interception.css` / `interception.js`: The page that is displayed when a website is blocked.
-* `icons/`: Application icons.
+* **精美的用户界面与交互**:
+    * **实时API状态**: 在弹窗和设置页，您可以直观地看到当前AI服务的连接状态，并能**手动刷新**以获取最新状态。
+    * **美观的对话框**: 所有的确认、输入操作都由**精心设计的自定义对话框**完成，告别浏览器原生弹窗的糟糕体验。
+    * **智能分组管理**: 您可以轻松地将锁定的规则分组管理。在为规则重新分类时，系统会提供**包含现有分组的下拉菜单**，让您的操作更高效。
 
 ---
 
-## <a name="zh-cn"></a>Path Blocker (AI 版)
+## 工作原理
 
-**Path Blocker (AI 版)** 是一款为终极专注而生的硬核网站拦截器。它结合了永久、不可移除的黑名单与智能 AI 守护，保护您免受干扰。
+1.  **选择您的模式**:
+    * **规则模式**: 仅激活您的永久锁定列表，执行最严格的URL路径匹配拦截。
+    * **AI模式**: 仅由AI守护。设定您的意图，让AI保护您的专注力。
+    * **混合模式 (推荐)**: 优先匹配规则列表，然后由AI进行二次守护。
 
-### 核心功能
+2.  **设定您的意图**: 在AI或混合模式下，告诉AI您当前的任务。这个上下文是AI做出智能拦截决策的**关键**。
 
-* **永久锁定**：一旦将网站添加到“硬核”列表，它将被永远锁定。没有回头路。这适用于那些您确信完全是浪费时间的网站。
-* **AI 守护模式**：设定您当前的意图（例如“学习 Python”、“撰写报告”），AI 将分析您访问的页面。如果页面内容与您设定的目标不符，它将被拦截。这对于防止无意识的浏览和保持任务专注非常有效。
-* **混合模式**：两全其美的完美结合。它优先处理您的永久锁定列表，同时利用 AI 守护确保您专注于当前任务。
-* **灵活的白名单**：AI 并非完美。如果它拦截了您需要的网站，您只需一键即可授予临时（一小时）或永久访问权限。
-* **简单易用**：简洁直观的界面让您轻松管理锁定列表、设定 AI 意图以及切换模式。
+3.  **配置您的AI服务**:
+    * **支持多种模型**: 您可以在`设置`页面选择使用 **Google Gemini** 或 **OpenAI GPT** 作为您的AI分析引擎。
+    * **API密钥配置**: 您需要提供自己选择的AI服务的API密钥。设置页面提供了**实时API有效性验证**功能，确保您的配置准确无误。
 
-### 工作原理
+4.  **建立您的规则库**:
+    * **一键锁定**: 在弹窗中，可以一键将当前页面添加到锁定列表。
+    * **手动添加**: 手动输入规则名称和URL路径，并将其归入特定分组。
 
-1.  **选择您的模式**：
-    * **硬核模式**：仅激活永久锁定列表。用于最大程度地防范您最糟糕的数字恶习。
-    * **AI 模式**：仅激活 AI 守护。设定您的意图，让 AI 保护您的专注力。
-    * **混合模式**：永久列表和 AI 守护同时激活。这是推荐的默认模式。
-2.  **设定您的意图**：在 AI 或混合模式下，告诉 AI 您正在做什么。这个上下文对于它做出智能的拦截决策至关重要。您需要提供自己的 Gemini API 密钥才能使用此功能。
-3.  **建立您的永久锁定列表**：
-    * **一键添加**：立即将当前网站添加到您的永久锁定列表。
-    * **手动添加**：手动输入网站名称和 URL 路径，将其添加到列表。您还可以将锁定的网站分组管理。
-4.  **保持专注**：当您尝试访问被拦截的网站时，Path Blocker 会拦截请求，并向您显示一个页面，解释其被拦截的原因。
+---
 
-### 仓库文件说明
+## <a name="en"></a>Core Features (English)
 
-* `manifest.json`：扩展程序的配置文件，定义其权限和核心组件。
-* `background.js`：在后台运行的服务工作线程，包含所有拦截网站和与 AI 通信的核心逻辑。
-* `popup.html` / `popup.css` / `popup.js`：扩展程序弹窗的用户界面，您可以在此管理设置和锁定列表。
-* `interception.html` / `interception.css` / `interception.js`：当网站被拦截时显示的页面。
-* `icons/`：应用程序图标。
+* **Hardcore Mode**: Add distracting websites to a permanent blocklist. Once a rule is added, it **cannot be deleted or modified**, providing the strongest protection.
+
+* **AI Guardian Mode**: The soul of this extension.
+    * **Set Your Intention**: Define your current work or study goal, such as "Learning React" or "Writing a quarterly report".
+    * **Intelligent Analysis**: The AI guardian analyzes the **title** of every page you visit in real-time, scoring its relevance to your set intention.
+    * **Precise Interception**: If the AI deems the content irrelevant to your goal (e.g., opening entertainment news while studying programming), it will automatically block the page and explain why.
+
+* **Hybrid Mode**: The best of both worlds. It prioritizes your permanent blocklist and then uses the AI Guardian to keep you focused.
+
+* **Flexible Whitelisting & Passes**: The AI isn't perfect. If it blocks a site you need, you can grant a **temporary pass** (e.g., for this instance, one hour, or until the end of the day) or **permanently whitelist** the domain with a single click.
+
+* **Refined UI & UX**:
+    * **Real-time API Status**: Both the popup and settings page display the live status of your AI service connection, complete with a **manual refresh button**.
+    * **Beautiful Custom Dialogs**: All confirmation and input actions are handled by **well-designed custom dialogs**, replacing the clunky native browser popups.
+    * **Smart Group Management**: Easily organize your locked rules into groups. When reclassifying a rule, the system provides a **dropdown menu of existing groups** for efficient organization.
+
+---
