@@ -68,3 +68,5 @@
     * **Smart Group Management**: Easily organize your locked rules into groups. When reclassifying a rule, the system provides a **dropdown menu of existing groups** for efficient organization.
 
 ---
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Twind2/Path-Blocker-AI&type=Date)](https://star-history.com/#repos=Twind2/Path-Blocker-AI&Date)
