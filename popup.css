@@ -1,17 +1,67 @@
-/* --- Global Styles --- */
+/* --- Google Fonts Import: Inter --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap');
+
+/* --- Keyframe Animations for "Fun Soul" --- */
+@keyframes jelly-bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes slow-rotate {
+    from { transform: translateY(-50%) rotate(0deg); }
+    to { transform: translateY(-50%) rotate(90deg); }
+}
+
+@keyframes domino-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Global Styles & Background Texture --- */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     margin: 0;
     width: 380px;
-    background-color: #f0f2f5;
+    /* Subtle noise background texture for the "glass" to interact with */
+    background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ee 100%);
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuNjUiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWx0ZXI9InVybCgibm9pc2UpIiBvcGFjaXR5PSIwLjA1Ii8+PC9zdmc+'),
+                      linear-gradient(135deg, #f0f2f5 0%, #e6e9ee 100%);
     color: #1c1e21;
 }
+
 .container {
     display: flex;
     flex-direction: column;
     height: 100%;
 }
+
 a { text-decoration: none; }
+
+/* --- Glass Material Effect (Applied to Sections) --- */
+.focus-score-section,
+.mode-section,
+.add-section,
+.group-container,
+.empty-list {
+    /* Stronger blur for a more pronounced frosted glass effect */
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    
+    /* Lower opacity for better readability and a milkier glass look */
+    background-color: rgba(255, 255, 255, 0.45);
+    
+    /* Soft inner glow to simulate light refraction on glass edges */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07), inset 0 0 1px rgba(255, 255, 255, 0.7);
+    
+    border-radius: 16px; /* Softer, more modern border radius */
+    margin-bottom: 20px;
+}
 
 /* --- Header --- */
 header {
@@ -19,13 +69,14 @@ header {
     align-items: center;
     justify-content: center;
     gap: 12px;
-    padding: 18px;
+    padding: 24px 18px;
     flex-shrink: 0;
     position: relative;
 }
 header h1 {
     font-size: 22px;
-    font-weight: 600;
+    font-weight: 500; /* Medium weight for clarity */
+    letter-spacing: 0.5px; /* Slightly spaced for elegance */
     margin: 0;
 }
 header .fa-shield-halved {
@@ -38,29 +89,25 @@ header .fa-shield-halved {
     right: 22px;
     color: #606770;
     font-size: 18px;
-    transition: color 0.2s;
+    transition: color 0.3s ease, transform 0.4s ease;
 }
 #settingsLink:hover {
     color: #007aff;
+    animation: slow-rotate 0.5s ease-in-out forwards;
 }
 
-
-/* --- Content Wrapper for Scrolling --- */
+/* --- Content Wrapper --- */
 .content-wrapper {
     flex-grow: 1;
     overflow-y: auto;
     padding: 0 18px 18px 18px;
 }
 
-/* --- 新增: Focus Score Section --- */
+/* --- Focus Score Section: Ultimate Elegance --- */
 .focus-score-section {
-    background: linear-gradient(135deg, #6e8efb, #a777e3);
-    color: white;
     padding: 20px;
-    border-radius: 12px;
     text-align: center;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 15px rgba(110, 142, 251, 0.4);
+    background: transparent; /* Let the glass effect shine */
 }
 .score-display {
     display: flex;
@@ -69,34 +116,43 @@ header .fa-shield-halved {
     justify-content: center;
 }
 .score-value {
-    font-size: 48px;
-    font-weight: 700;
+    font-size: 52px;
+    font-weight: 200; /* Extra Light for a delicate, airy feel */
     line-height: 1;
+    color: #1c1e21;
 }
 .score-label {
     font-size: 14px;
-    font-weight: 500;
-    opacity: 0.85;
-    margin-top: 5px;
+    font-weight: 400; /* Regular weight */
+    color: #606770;
+    margin-top: 8px;
 }
 
-
-/* --- Mode & AI Section --- */
+/* --- Mode & AI Section with "Sliding Pill" Switcher --- */
 .mode-section {
-    background: #fff;
     padding: 16px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    margin-bottom: 20px;
 }
+
 .mode-switcher {
     display: flex;
-    justify-content: space-between;
-    background-color: #e9ecef;
-    border-radius: 10px;
+    position: relative;
+    background-color: rgba(0,0,0,0.05); /* Slightly darker track for the pill */
+    border-radius: 12px;
     padding: 4px;
     margin-bottom: 14px;
 }
+
+.glider {
+    position: absolute;
+    height: calc(100% - 8px);
+    width: calc((100% - 8px) / 3);
+    background-color: #fff;
+    border-radius: 9px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    /* The magic elastic transition */
+    transition: transform 0.4s cubic-bezier(0.2, 1.1, 0.8, 1.1);
+}
+
 .mode-btn {
     flex: 1;
     padding: 8px 10px;
@@ -107,388 +163,194 @@ header .fa-shield-halved {
     font-weight: 500;
     color: #495057;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: color 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
+    z-index: 1; /* Ensure buttons are clickable */
 }
-.mode-btn:hover {
-    background-color: #dee2e6;
-}
+
 .mode-btn.active {
-    background-color: #fff;
-    color: #007aff;
-    font-weight: 600;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    color: #007aff; /* Only color changes for the text */
 }
 
-.ai-control-area {
-    display: flex;
-    gap: 10px;
-}
-.ai-input-group {
-    flex-grow: 1;
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-.ai-input-group .fa-bullseye, .ai-input-group .fa-key {
-    position: absolute;
-    left: 14px;
-    color: #adb5bd;
-    font-size: 14px;
-}
-#aiIntentInput {
-    box-sizing: border-box;
-    width: 100%;
-    padding: 10px 14px 10px 38px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.2s;
-    background-color: #f8f9fa;
-}
-#aiIntentInput:focus {
-    border-color: #007aff;
-    background-color: #fff;
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
-}
-#setIntentBtn {
+/* --- Light-Sensitive Gradient Button Redesign --- */
+#setIntentBtn, #addCurrentPageBtn, #addBtn {
     border: none;
-    background-color: #007aff;
     color: white;
-    padding: 0 18px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    flex-shrink: 0;
-}
-#setIntentBtn:hover {
-    background-color: #005ce6;
-}
-
-/* --- Add Section --- */
-.quick-add-btn {
-    width: 100%;
-    background-color: #34c759;
-    color: #fff;
-    border: none;
     padding: 12px;
     border-radius: 10px;
     font-size: 15px;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    margin-bottom: 15px;
 }
-.quick-add-btn:hover {
-    background-color: #2da449;
+#setIntentBtn:hover, #addCurrentPageBtn:hover, #addBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
-.add-section {
-    background: #fff;
-    padding: 16px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    margin-bottom: 25px;
+
+/* "设定" Button */
+#setIntentBtn {
+    background: linear-gradient(145deg, #007aff, #0056b3);
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
 }
-.input-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-.input-grid input, .input-grid select {
-    box-sizing: border-box;
-    padding: 10px 14px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.2s;
+
+/* "一键锁定" Button */
+#addCurrentPageBtn {
     width: 100%;
-    background-color: #fff;
+    margin-bottom: 15px;
+    background: linear-gradient(145deg, #34c759, #28a745);
+    box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
 }
-#nameInput, #pathInput {
-    grid-column: span 1;
-}
-#groupSelect {
-    grid-column: 1 / -1;
-}
-.input-grid input:focus, .input-grid select:focus {
-    border-color: #007aff;
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
-}
+
+/* "永久锁定" Button */
 #addBtn {
     width: 100%;
-    background-color: #d93025;
-    color: #fff;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-#addBtn:hover {
-    background-color: #b0261e;
-}
-.note {
-    font-size: 12px;
-    color: #606770;
-    text-align: center;
-    margin: 12px 0 0 0;
-    padding: 8px;
-    background-color: #fffbe6;
-    border: 1px solid #ffe58f;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
+    background: linear-gradient(145deg, #ff3b30, #c70000);
+    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
 }
 
-/* --- List Section --- */
+/* --- Rest of the form styling --- */
+.ai-control-area { display: flex; gap: 10px; }
+.ai-input-group { flex-grow: 1; position: relative; display: flex; align-items: center; }
+.ai-input-group .fa-bullseye { position: absolute; left: 14px; color: #adb5bd; font-size: 14px; }
+#aiIntentInput {
+    box-sizing: border-box; width: 100%; padding: 10px 14px 10px 38px;
+    border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 14px; outline: none;
+    transition: all 0.2s; background-color: rgba(248,249,250, 0.8);
+}
+#aiIntentInput:focus {
+    border-color: #007aff; background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+}
+
+.add-section { padding: 16px; margin-bottom: 25px; }
+.input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.input-grid input, .input-grid select {
+    box-sizing: border-box; padding: 10px 14px; border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 8px; font-size: 14px; outline: none; transition: all 0.2s; width: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+#groupSelect { grid-column: 1 / -1; }
+.input-grid input:focus, .input-grid select:focus {
+    border-color: #007aff; box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+}
+.note { font-size: 12px; color: #606770; text-align: center; margin: 12px 0 0 0;
+    padding: 8px; background-color: rgba(255, 251, 230, 0.8); border: 1px solid #ffe58f;
+    border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+
+/* --- List Section with Domino Load Animation --- */
 .list-section h2 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #606770;
-    margin: 0 0 10px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-size: 16px; font-weight: 500; /* Medium */ color: #333;
+    margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;
 }
 .group-container {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
-    margin-bottom: 12px;
     overflow: hidden;
+    /* Domino effect animation */
+    opacity: 0;
+    transform: translateY(20px);
+    animation: domino-fade-in 0.5s ease-out forwards;
 }
+/* Staggering the animation */
+.group-container:nth-child(2) { animation-delay: 0.1s; }
+.group-container:nth-child(3) { animation-delay: 0.2s; }
+.group-container:nth-child(4) { animation-delay: 0.3s; }
+/* ...and so on */
+
 .group-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    cursor: pointer;
-    font-weight: 600;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 16px; cursor: pointer; font-weight: 500; /* Medium */
     transition: background-color 0.2s;
 }
-.group-header:hover {
-    background-color: #f8f9fa;
-}
-.group-header .group-name {
-    font-size: 16px;
-}
-.group-header .toggle-icon {
-    transition: transform 0.2s ease;
-}
-.group-header.collapsed .toggle-icon {
-    transform: rotate(-90deg);
-}
+.group-header:hover { background-color: rgba(0,0,0,0.03); }
+.group-header .group-name { font-size: 16px; }
+.group-header .toggle-icon { transition: transform 0.3s ease; }
+.group-header.collapsed .toggle-icon { transform: rotate(-90deg); }
+
 .sites-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out;
+    list-style: none; padding: 0; margin: 0; max-height: 0;
+    overflow: hidden; transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
 }
-.sites-list.expanded {
-    max-height: 500px; /* Adjust as needed */
-}
+.sites-list.expanded { max-height: 500px; padding-bottom: 8px; }
+
 .locked-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    border-top: 1px solid #f0f2f5;
-    gap: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-top: 1px solid rgba(0,0,0,0.05); gap: 10px;
+    transition: background-color 0.2s ease;
 }
-.site-info {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    overflow: hidden;
-    flex-grow: 1;
+.locked-item:hover {
+    background-color: rgba(0, 122, 255, 0.05);
 }
-.site-name, .site-domain {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.site-name {
-    font-size: 15px;
-    font-weight: 500;
-}
-.site-domain {
-    font-size: 12px;
-    color: #606770;
-}
-.item-actions {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-}
-.lock-icon {
-    font-size: 14px;
-    color: #b0b3b8;
-}
-.reclassify-btn {
-    background: none;
-    border: none;
-    font-size: 14px;
-    color: #007aff;
-    cursor: pointer;
-    margin-left: 10px;
-    padding: 5px;
-}
-.reclassify-btn:hover {
-    color: #005ce6;
-}
-.empty-list {
-    text-align: center;
-    padding: 30px;
-    color: #606770;
-    background-color: #fff;
-    border-radius: 12px;
+.locked-item:hover .reclassify-btn {
+    opacity: 1;
 }
 
-/* --- 新增：API 状态显示 --- */
+.site-info { display: flex; flex-direction: column; gap: 3px; overflow: hidden; flex-grow: 1; }
+.site-name, .site-domain { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.site-name { font-size: 15px; font-weight: 400; /* Regular */ }
+.site-domain { font-size: 12px; color: #606770; font-weight: 300; /* Light */ }
+
+.item-actions { display: flex; align-items: center; flex-shrink: 0; }
+.lock-icon { font-size: 14px; color: #b0b3b8; }
+.reclassify-btn {
+    background: none; border: none; font-size: 16px; color: #007aff;
+    cursor: pointer; margin-left: 12px; padding: 5px;
+    opacity: 0.7; transition: opacity 0.2s, color 0.2s, transform 0.2s ease;
+}
+.reclassify-btn:hover { color: #005ce6; transform: scale(1.1); }
+
+.empty-list { text-align: center; padding: 30px; color: #606770; }
+
+/* --- API Status Display --- */
 .api-status-popup {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-top: 10px;
-    width: 100%;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    box-sizing: border-box;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    margin-top: 10px; width: 100%; padding: 8px 12px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; box-sizing: border-box;
 }
 .api-status-popup.success { background-color: #e6f4ea; color: #3d8b5b; }
 .api-status-popup.error { background-color: #fdeeee; color: #c93c3c; }
 .api-status-popup.checking { background-color: #e9ecef; color: #495057; }
-
-#apiStatusText {
-    font-weight: 500;
-}
-
 #refreshApiBtn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: inherit;
-    font-size: 13px;
-    padding: 2px;
-    line-height: 1;
+    background: none; border: none; cursor: pointer; color: inherit; font-size: 13px;
+    padding: 2px; line-height: 1;
 }
-#refreshApiBtn i.fa-sync-alt {
-    transition: transform 0.8s ease-in-out;
-}
-#refreshApiBtn.loading i.fa-sync-alt {
-    transform: rotate(360deg);
-}
+#refreshApiBtn i.fa-sync-alt { transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+#refreshApiBtn.loading i.fa-sync-alt { transform: rotate(360deg); }
 
-/* --- 新增：自定义对话框样式 --- */
-.hidden {
-    display: none !important;
-}
-
+/* --- Dialog Box Styles (Unchanged) --- */
+.hidden { display: none !important; }
 .dialog-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center;
+    align-items: center; z-index: 1000;
 }
-
 .dialog-box {
-    background: #fff;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    width: 90%;
-    max-width: 320px;
-    text-align: center;
+    background: #fff; padding: 24px; border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2); width: 90%;
+    max-width: 320px; text-align: center;
 }
-
-.dialog-box h3 {
-    margin-top: 0;
-    margin-bottom: 12px;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.dialog-box p {
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: #606770;
-    font-size: 15px;
-    line-height: 1.5;
-}
-
+.dialog-box h3 { margin-top: 0; margin-bottom: 12px; font-size: 18px; font-weight: 600; }
+.dialog-box p { margin-top: 0; margin-bottom: 20px; color: #606770; font-size: 15px; line-height: 1.5; }
 .dialog-input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-sizing: border-box;
-    margin-bottom: 20px;
+    width: 100%; padding: 10px; border: 1px solid #ddd;
+    border-radius: 8px; box-sizing: border-box; margin-bottom: 20px;
 }
-.dialog-input:focus {
-    outline: none;
-    border-color: #007aff;
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
-}
-
-.dialog-actions {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-}
-
+.dialog-input:focus { outline: none; border-color: #007aff; box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2); }
+.dialog-actions { display: flex; justify-content: space-between; gap: 12px; }
 .dialog-btn {
-    flex: 1;
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 15px;
+    font-weight: 500; cursor: pointer; transition: background-color 0.2s;
 }
-
-.dialog-btn.primary {
-    background-color: #007aff;
-    color: white;
-}
-.dialog-btn.primary:hover {
-    background-color: #005ce6;
-}
-
-.dialog-btn.secondary {
-    background-color: #e9ecef;
-    color: #495057;
-}
-.dialog-btn.secondary:hover {
-    background-color: #dee2e6;
-}
+.dialog-btn.primary { background-color: #007aff; color: white; }
+.dialog-btn.primary:hover { background-color: #005ce6; }
+.dialog-btn.secondary { background-color: #e9ecef; color: #495057; }
+.dialog-btn.secondary:hover { background-color: #dee2e6; }

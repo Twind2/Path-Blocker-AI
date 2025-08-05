@@ -5,6 +5,9 @@
     <title>Path Blocker (AI Edition)</title>
     <link rel="stylesheet" href="popup.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
@@ -23,6 +26,7 @@
 
             <section class="mode-section">
                 <div class="mode-switcher">
+                    <div class="glider"></div>
                     <button class="mode-btn" id="modeHardcore" data-mode="hardcore" title="仅启用永久锁定列表"><i class="fas fa-lock"></i> 规则</button>
                     <button class="mode-btn" id="modeHybrid" data-mode="hybrid" title="优先永久锁定，再由AI守护"><i class="fas fa-wand-magic-sparkles"></i> 混合</button>
                     <button class="mode-btn" id="modeAi" data-mode="ai" title="仅由AI根据意图守护"><i class="fas fa-brain"></i> AI</button>

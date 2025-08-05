@@ -12,50 +12,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
             titleEl.textContent = title;
             messageEl.textContent = message;
-
-            // 根据参数显示或隐藏输入框和选择框
             inputEl.style.display = showInput ? 'block' : 'none';
             selectEl.style.display = showSelect ? 'block' : 'none';
-            
-            // 如果两个都应该显示，调整一下布局
             if (showInput && showSelect) {
-                 inputEl.style.display = 'none'; // 默认先隐藏输入框
+                 inputEl.style.display = 'none';
                  inputEl.style.marginTop = '10px';
             } else {
                  inputEl.style.marginTop = '0';
             }
-
             if (showInput) {
                 inputEl.value = '';
                 inputEl.placeholder = placeholder;
                 if(!showSelect) setTimeout(() => inputEl.focus(), 50);
             }
-
             if (showSelect) {
-                selectEl.innerHTML = ''; // 清空旧选项
+                selectEl.innerHTML = '';
                 groups.forEach(groupName => {
                     if (groupName !== '未分类') {
                         selectEl.add(new Option(groupName, groupName));
                     }
                 });
                 selectEl.add(new Option('[ 新建分组... ]', '__newgroup__'));
-                // 自动选择第一个可用分组，或新建
                 const firstGroup = groups.find(g => g !== '未分类');
                 selectEl.value = firstGroup ? firstGroup : '__newgroup__';
             }
-
             overlay.classList.remove('hidden');
-
             const closeDialog = (value) => {
                 overlay.classList.add('hidden');
-                // 解绑所有事件
                 confirmBtn.onclick = null;
                 cancelBtn.onclick = null;
                 inputEl.onkeydown = null;
                 selectEl.onchange = null;
                 resolve(value);
             };
-
             confirmBtn.onclick = () => {
                 let result;
                 if (showSelect) {
@@ -69,13 +58,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 closeDialog(result);
             };
-            
             cancelBtn.onclick = () => closeDialog(null);
-
             if (showInput) {
                 inputEl.onkeydown = (e) => { if (e.key === 'Enter') confirmBtn.click(); };
             }
-            
             if (showSelect) {
                 const handleSelectChange = () => {
                     if (selectEl.value === '__newgroup__') {
@@ -87,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 };
                 selectEl.onchange = handleSelectChange;
-                handleSelectChange(); // 初始触发一次
+                handleSelectChange();
             }
         });
     };
@@ -109,6 +95,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const apiStatusContainer = document.getElementById('apiStatusContainer');
     const apiStatusText = document.getElementById('apiStatusText');
     const refreshApiBtn = document.getElementById('refreshApiBtn');
+    const modeSwitcher = document.querySelector('.mode-switcher');
+    let glider;
 
     // --- 全局变量 ---
     let groups = [];
@@ -122,25 +110,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         if(apiStatusContainer) apiStatusContainer.style.display = 'flex';
-
         let text, className;
-        if (!apiKeyExists) {
-            text = 'API 未配置';
-            className = 'error';
-        } else if (status && status.checking) {
-            text = 'API检查中...';
-            className = 'checking';
-        } else if (status && status.success) {
-            text = `${provider.toUpperCase()} 状态正常`;
-            className = 'success';
-        } else if (status && !status.success) {
-            text = `API 错误`;
-            className = 'error';
-        } else {
-            text = `API 待验证`;
-            className = 'checking';
-        }
-        
+        if (!apiKeyExists) { text = 'API 未配置'; className = 'error'; }
+        else if (status && status.checking) { text = 'API检查中...'; className = 'checking'; }
+        else if (status && status.success) { text = `${provider.toUpperCase()} 状态正常`; className = 'success'; }
+        else if (status && !status.success) { text = `API 错误`; className = 'error'; }
+        else { text = `API 待验证`; className = 'checking'; }
         if(apiStatusText) apiStatusText.textContent = text;
         if(apiStatusContainer) apiStatusContainer.className = 'api-status-popup ' + className;
     };
@@ -153,8 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const apiKeyExists = provider === 'gemini' ? !!data.api_key : !!data.openai_api_key;
             if (!apiKeyExists) {
                 updateApiStatusUI(null, provider, false);
-                refreshApiBtn.classList.remove('loading');
-                return;
+                refreshApiBtn.classList.remove('loading'); return;
             }
             updateApiStatusUI({ checking: true }, provider, true);
             chrome.runtime.sendMessage({ action: 'refresh_api_status' }, (result) => {
@@ -164,8 +138,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
+    // 更新滑块位置的函数
+    const updateGliderPosition = (mode) => {
+        const modeMap = { 'hardcore': 0, 'hybrid': 1, 'ai': 2 };
+        const index = modeMap[mode];
+        if (glider && typeof index !== 'undefined') {
+            glider.style.transform = `translateX(${index * 100}%)`;
+        }
+    };
+
     // 初始化函数
     const initialize = async () => {
+        // --- 【已修改】智能处理滑块 ---
+        if (modeSwitcher) {
+            // 首先，尝试寻找已存在的滑块
+            glider = modeSwitcher.querySelector('.glider');
+            // 如果没找到，则创建一个新的
+            if (!glider) {
+                glider = document.createElement('div');
+                glider.className = 'glider';
+                modeSwitcher.prepend(glider);
+            }
+        }
+
         const data = await chrome.storage.local.get([
             'groups', 'current_mode', 'ai_intent', 'focus_scores_history', 'ai_provider', 'api_key', 'openai_api_key'
         ]);
@@ -181,6 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateModeUI(currentMode);
         renderGroups();
         populateGroupSelect();
+        updateGliderPosition(currentMode);
 
         modeHardcoreBtn.addEventListener('click', () => switchMode('hardcore'));
         modeHybridBtn.addEventListener('click', () => switchMode('hybrid'));
@@ -197,14 +193,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // 更新模式UI的函数
     const updateModeUI = (mode) => {
         currentMode = mode;
-        modeHardcoreBtn.classList.toggle('active', mode === 'hardcore');
-        modeHybridBtn.classList.toggle('active', mode === 'hybrid');
-        modeAiBtn.classList.toggle('active', mode === 'ai');
+        [modeHardcoreBtn, modeHybridBtn, modeAiBtn].forEach(btn => btn.classList.remove('active'));
+        const activeButton = document.querySelector(`.mode-btn[data-mode="${mode}"]`);
+        if (activeButton) activeButton.classList.add('active');
         const isAiDisabled = (mode === 'hardcore');
         aiControlArea.style.opacity = isAiDisabled ? '0.5' : '1';
         aiIntentInput.disabled = isAiDisabled;
         setIntentBtn.disabled = isAiDisabled;
-
         chrome.storage.local.get(['ai_provider', 'api_key', 'openai_api_key'], data => {
             const provider = data.ai_provider || 'gemini';
             const apiKeyExists = provider === 'gemini' ? !!data.api_key : !!data.openai_api_key;
@@ -221,9 +216,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         groups.sort((a, b) => a.groupName.localeCompare(b.groupName));
-        groups.forEach(group => {
+        groups.forEach((group, index) => {
             const groupContainer = document.createElement('div');
             groupContainer.className = 'group-container';
+            groupContainer.style.animationDelay = `${index * 0.05}s`;
             const header = document.createElement('div');
             header.className = 'group-header collapsed';
             header.innerHTML = `<span class="group-name">${group.groupName}</span><i class="fas fa-chevron-down toggle-icon"></i>`;
@@ -266,6 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const switchMode = (newMode) => {
         chrome.storage.local.set({ current_mode: newMode }, () => {
             updateModeUI(newMode);
+            updateGliderPosition(newMode);
         });
     };
     
@@ -282,22 +279,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const handleAdd = async () => {
         const customName = nameInput.value.trim();
         let path = pathInput.value.trim();
-        if (!customName || !path) {
-            alert('规则名称和URL路径都不能为空！'); return;
-        }
-        if (!path.includes('.') || /\s/.test(path)) {
-            alert('URL路径格式无效！'); return;
-        }
+        if (!customName || !path) { alert('规则名称和URL路径都不能为空！'); return; }
+        if (!path.includes('.') || /\s/.test(path)) { alert('URL路径格式无效！'); return; }
         path = path.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
-        if (groups.some(g => g.sites.some(s => s.path === path))) {
-            alert("这个精确路径已在锁定列表中！"); return;
-        }
-        
-        const confirmed = await showCustomDialog({
-            title: '永久锁定确认',
-            message: `确定要永久锁定规则 "${customName}" 吗？此操作一旦确认将无法撤销。`,
-        });
-
+        if (groups.some(g => g.sites.some(s => s.path === path))) { alert("这个精确路径已在锁定列表中！"); return; }
+        const confirmed = await showCustomDialog({ title: '永久锁定确认', message: `确定要永久锁定规则 "${customName}" 吗？此操作一旦确认将无法撤销。`, });
         if (confirmed) {
             const selectedGroup = groupSelect.value;
             const groupName = selectedGroup === '__nogroup__' || selectedGroup === '__newgroup__' ? '未分类' : selectedGroup;
@@ -313,13 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const handleGroupSelectChange = async () => {
         if (groupSelect.value === '__newgroup__') {
-            const newGroupName = await showCustomDialog({
-                title: '新建分组',
-                message: '请输入新分组的名称：',
-                showInput: true,
-                placeholder: '例如：工作、学习'
-            });
-
+            const newGroupName = await showCustomDialog({ title: '新建分组', message: '请输入新分组的名称：', showInput: true, placeholder: '例如：工作、学习' });
             if (newGroupName) {
                 if (!groups.some(g => g.groupName.toLowerCase() === newGroupName.toLowerCase())) {
                     const option = new Option(newGroupName, newGroupName, false, true);
@@ -341,51 +321,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 nameInput.value = tab.title || '当前页面';
                 pathInput.value = tab.url.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
                 nameInput.focus();
-            } else {
-                alert('无法获取当前页面的信息。');
-            }
-        } catch (error) {
-            alert('获取当前页面信息失败。');
-        }
+            } else { alert('无法获取当前页面的信息。'); }
+        } catch (error) { alert('获取当前页面信息失败。'); }
     };
 
     const handleReclassifyClick = async (event) => {
         const target = event.target.closest('.reclassify-btn');
         if (!target) return;
-        
         const path_to_move = target.dataset.path;
-        
-        const newGroupName = await showCustomDialog({
-            title: '重新分类',
-            message: `请为 "${path_to_move}" 选择或创建一个新的分组：`,
-            showSelect: true,
-            showInput: true, // 也显示输入框，但由select控制
-            groups: groups.map(g => g.groupName)
-        });
-
-        if (!newGroupName) return; // 用户取消或输入为空
-        
+        const newGroupName = await showCustomDialog({ title: '重新分类', message: `请为 "${path_to_move}" 选择或创建一个新的分组：`, showSelect: true, showInput: true, groups: groups.map(g => g.groupName) });
+        if (!newGroupName) return;
         const trimmedGroupName = newGroupName.trim();
         if (trimmedGroupName === '未分类') return;
-
         const unclassifiedGroup = groups.find(g => g.groupName === '未分类');
         if (!unclassifiedGroup) return;
-        
         const siteIndex = unclassifiedGroup.sites.findIndex(s => s.path === path_to_move);
         if (siteIndex === -1) return;
-        
         const [siteToMove] = unclassifiedGroup.sites.splice(siteIndex, 1);
         if (unclassifiedGroup.sites.length === 0) {
             groups = groups.filter(g => g.groupName !== '未分类');
         }
-        
         let targetGroup = groups.find(g => g.groupName.toLowerCase() === trimmedGroupName.toLowerCase());
         if (targetGroup) {
             targetGroup.sites.push(siteToMove);
         } else {
             groups.push({ groupName: trimmedGroupName, sites: [siteToMove] });
         }
-        
         await chrome.storage.local.set({ groups: groups });
         renderGroups();
         populateGroupSelect();
